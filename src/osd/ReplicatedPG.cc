@@ -4698,14 +4698,14 @@ void ReplicatedPG::eval_repop(RepGather *repop)
   if (m)
     dout(10) << "eval_repop " << *repop
 	     << " wants=" << (m->wants_ack() ? "a":"") << (m->wants_ondisk() ? "d":"")
-	     << (repop->done ? " DONE" : "")
+	     << (repop->done() ? " DONE" : "")
 	     << dendl;
   else
     dout(10) << "eval_repop " << *repop << " (no op)"
-	     << (repop->done ? " DONE" : "")
+	     << (repop->done() ? " DONE" : "")
 	     << dendl;
 
-  if (repop->done)
+  if (repop->done())
     return;
 
   // apply?
@@ -4808,7 +4808,7 @@ void ReplicatedPG::eval_repop(RepGather *repop)
   // done.
   if (repop->waitfor_ack.empty() && repop->waitfor_disk.empty() &&
       repop->applied) {
-    repop->done = true;
+    repop->mark_done();
 
     calc_min_last_complete_ondisk();
 

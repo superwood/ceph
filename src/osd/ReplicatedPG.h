@@ -405,6 +405,7 @@ public:
    * State on the PG primary associated with the replicated mutation
    */
   class RepGather {
+    bool is_done;
   public:
     xlist<RepGather*>::item queue_item;
     int nref;
@@ -417,7 +418,7 @@ public:
 
     tid_t rep_tid;
 
-    bool applying, applied, aborted, done;
+    bool applying, applied, aborted;
 
     set<int>  waitfor_ack;
     //set<int>  waitfor_nvram;
@@ -426,6 +427,8 @@ public:
     //bool sent_nvram;
     bool sent_disk;
     
+    Context *ondone; /// if set, this Context will be activated when repop is done
+
     utime_t   start;
     
     eversion_t          pg_local_last_complete;
@@ -435,14 +438,16 @@ public:
     
     RepGather(OpContext *c, ObjectContextRef pi, tid_t rt, 
 	      eversion_t lc) :
+      is_done(false),
       queue_item(this),
       nref(1),
       ctx(c), obc(pi),
       rep_tid(rt), 
-      applying(false), applied(false), aborted(false), done(false),
+      applying(false), applied(false), aborted(false),
       sent_ack(false),
       //sent_nvram(false),
       sent_disk(false),
+      ondone(NULL),
       pg_local_last_complete(lc),
       queue_snap_trimmer(false) { }
 
@@ -459,6 +464,8 @@ public:
 	//generic_dout(0) << "deleting " << this << dendl;
       }
     }
+    void mark_done() { is_done = true; if (ondone) ondone->complete(0); }
+    bool done() { return is_done; }
   };
 
 

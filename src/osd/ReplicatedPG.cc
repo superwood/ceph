@@ -3615,12 +3615,13 @@ int ReplicatedPG::do_osd_ops(OpContext *ctx, vector<OSDOp>& ops)
 	  goto fail;
 	}
 
+	object_copy_data_t reply_obj;
 	// size, mtime
-	::encode(oi.size, osd_op.outdata);
-	::encode(oi.mtime, osd_op.outdata);
+	reply_obj.size = oi.size;
+	reply_obj.mtime = oi.mtime;
 
 	// attrs
-	map<string,bufferptr> out_attrs;
+	map<string,bufferptr>& out_attrs = reply_obj.in_attrs;
 	if (!cursor.attr_complete) {
 	  result = osd->store->getattrs(coll, soid, out_attrs, true);
 	  if (result < 0)
@@ -3628,12 +3629,11 @@ int ReplicatedPG::do_osd_ops(OpContext *ctx, vector<OSDOp>& ops)
 	  cursor.attr_complete = true;
 	  dout(20) << " got attrs" << dendl;
 	}
-	::encode(out_attrs, osd_op.outdata);
 
 	int64_t left = out_max - osd_op.outdata.length();
 
 	// data
-	bufferlist bl;
+	bufferlist& bl = reply_obj.data;
 	if (left > 0 && !cursor.data_complete) {
 	  if (cursor.data_offset < oi.size) {
 	    result = osd->store->read(coll, oi.soid, cursor.data_offset, left, bl);
@@ -3648,10 +3648,9 @@ int ReplicatedPG::do_osd_ops(OpContext *ctx, vector<OSDOp>& ops)
 	    dout(20) << " got data" << dendl;
 	  }
 	}
-	::encode(bl, osd_op.outdata);
 
 	// omap
-	std::map<std::string,bufferlist> out_omap;
+	std::map<std::string,bufferlist>& out_omap = reply_obj.omap;
 	if (left > 0 && !cursor.omap_complete) {
 	  ObjectMap::ObjectMapIterator iter = osd->store->get_omap_iterator(coll, oi.soid);
 	  assert(iter);
@@ -3669,14 +3668,14 @@ int ReplicatedPG::do_osd_ops(OpContext *ctx, vector<OSDOp>& ops)
 	    dout(20) << " got omap" << dendl;
 	  }
 	}
-	::encode(out_omap, osd_op.outdata);
 
 	dout(20) << " cursor.is_complete=" << cursor.is_complete()
 		 << " " << out_attrs.size() << " attrs"
 		 << " " << bl.length() << " bytes"
 		 << " " << out_omap.size() << " keys"
 		 << dendl;
-	::encode(cursor, osd_op.outdata);
+	reply_obj.cursor = cursor;
+	::encode(reply_obj, osd_op.outdata);
 	result = 0;
       }
       break;

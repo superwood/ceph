@@ -2549,6 +2549,7 @@ void object_copy_data_t::encode(bufferlist& bl) const
   ENCODE_START(1, 1, bl);
   ::encode(size, bl);
   ::encode(mtime, bl);
+  ::encode(category, bl);
   ::encode(in_attrs, bl);
   ::encode(data, bl);
   ::encode(omap, bl);
@@ -2561,6 +2562,7 @@ void object_copy_data_t::decode(bufferlist::iterator& bl)
   DECODE_START(1, bl);
   ::decode(size, bl);
   ::decode(mtime, bl);
+  ::decode(category, bl);
   ::decode(attrs, bl);
   ::decode(data, bl);
   ::decode(omap, bl);

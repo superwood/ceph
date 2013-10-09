@@ -2524,7 +2524,7 @@ void object_copy_cursor_t::generate_test_instances(list<object_copy_cursor_t*>& 
 
 // -- object_copy_data_t --
 
-void object_copy_data_t::encode(bufferlist& bl) const
+void object_copy_data_t::encode_classic(bufferlist& bl) const
 {
   ::encode(size, bl);
   ::encode(mtime, bl);
@@ -2534,7 +2534,7 @@ void object_copy_data_t::encode(bufferlist& bl) const
   ::encode(cursor, bl);
 }
 
-void object_copy_data_t::decode(bufferlist::iterator& bl)
+void object_copy_data_t::decode_classic(bufferlist::iterator& bl)
 {
   ::decode(size, bl);
   ::decode(mtime, bl);
@@ -2542,6 +2542,30 @@ void object_copy_data_t::decode(bufferlist::iterator& bl)
   ::decode(data, bl);
   ::decode(omap, bl);
   ::decode(cursor, bl);
+}
+
+void object_copy_data_t::encode(bufferlist& bl) const
+{
+  ENCODE_START(1, 1, bl);
+  ::encode(size, bl);
+  ::encode(mtime, bl);
+  ::encode(in_attrs, bl);
+  ::encode(data, bl);
+  ::encode(omap, bl);
+  ::encode(cursor, bl);
+  ENCODE_FINISH(bl);
+}
+
+void object_copy_data_t::decode(bufferlist::iterator& bl)
+{
+  DECODE_START(1, bl);
+  ::decode(size, bl);
+  ::decode(mtime, bl);
+  ::decode(attrs, bl);
+  ::decode(data, bl);
+  ::decode(omap, bl);
+  ::decode(cursor, bl);
+  DECODE_FINISH(bl);
 }
 
 void object_copy_data_t::generate_test_instances(list<object_copy_data_t*>& o)

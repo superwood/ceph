@@ -909,7 +909,7 @@ protected:
   void _copy_some(ObjectContextRef obc, CopyOpRef cop);
   void _build_finish_copy_transaction(CopyOpRef cop,
                                       ObjectStore::Transaction& t);
-  int finish_copyfrom(OpContext *ctx);
+  void finish_copyfrom(OpContext *ctx);
   void cancel_copy(CopyOpRef cop);
   void cancel_copy_ops();
 

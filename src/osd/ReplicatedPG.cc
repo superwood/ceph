@@ -3681,7 +3681,8 @@ int ReplicatedPG::do_osd_ops(OpContext *ctx, vector<OSDOp>& ops)
 	} else {
 	  // finish
 	  assert(ctx->copy_cb->get_result() >= 0);
-	  result = finish_copyfrom(ctx);
+	  finish_copyfrom(ctx);
+	  result = 0;
 	}
       }
       break;
@@ -4521,7 +4522,7 @@ void ReplicatedPG::_build_finish_copy_transaction(CopyOpRef cop,
   }
 }
 
-int ReplicatedPG::finish_copyfrom(OpContext *ctx)
+void ReplicatedPG::finish_copyfrom(OpContext *ctx)
 {
   dout(20) << "finish_copyfrom on " << ctx->obs->oi.soid << dendl;
   ObjectState& obs = ctx->new_obs;
@@ -4549,9 +4550,9 @@ int ReplicatedPG::finish_copyfrom(OpContext *ctx)
   }
   ctx->delta_stats.num_wr++;
   ctx->delta_stats.num_wr_kb += SHIFT_ROUND_UP(obs.oi.size, 10);
-
-  return 0;
 }
+
+
 
 void ReplicatedPG::cancel_copy(CopyOpRef cop)
 {
